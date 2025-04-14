@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-logger-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: custom-logger
+  template:
+    metadata:
+      labels:
+        app: custom-logger
+    spec:
+      containers:
+      - name: custom-logger-container
+        image: custom-logger:local
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+        - name: logs-volume
+          mountPath: /app/logs
+      volumes:
+      - name: config-volume
+        configMap:
+          name: custom-logger-config
+          items:
+          - key: config.json
+            path: config.json
+      - name: logs-volume
+        hostPath:
+          path: /var/log/custom-logger
+          type: DirectoryOrCreate

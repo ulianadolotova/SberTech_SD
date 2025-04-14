@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tester-config
+data:
+  test.sh: |
+    #! /bin/bash
+    SERVICE_ENDPOINT="http://custom-logger-service"
+    TEST_MESSAGE='{"message": "Test log from pod"}'
+    HTTP_JSON="Content-Type: application/json"
+
+    YELLOW='\033[0;33m'
+    NC='\033[0m'
+
+    echo -e "${YELLOW}Tests:${NC}"
+    echo -e "* ${YELLOW}Service Balancing Test${NC}"
+    for i in $(seq 1 6);
+    do
+      ( echo -e "\tGET / -> $(curl --silent $SERVICE_ENDPOINT/)" ) &
+    done
+    sleep 2
+    echo
+
+    echo -e "* ${YELLOW}Status Test${NC}"
+    echo -e "\tGET /status -> $(curl --silent $SERVICE_ENDPOINT/status)"
+    echo
+
+    echo -e "* ${YELLOW}Empty Logs Test${NC}"
+    echo -e "\tGET /logs -> $(curl --silent $SERVICE_ENDPOINT/logs)"
+    echo
+
+    echo -e "* ${YELLOW}Filled Logs Test${NC}"
+    echo -e "\tGET /logs -> $(curl --silent $SERVICE_ENDPOINT/logs)"
+    echo -e "\tPOST /log -> $(curl --silent -X POST -H "$HTTP_JSON" -d "$TEST_MESSAGE" $SERVICE_ENDPOINT/log)"
+    echo -e "\tPOST /log -> $(curl --silent -X POST -H "$HTTP_JSON" -d "$TEST_MESSAGE" $SERVICE_ENDPOINT/log)"
+    echo -e "\tGET /logs -> \n$(curl --silent $SERVICE_ENDPOINT/logs)"
+    echo -e "${YELLOW}Done${NC}\n"
