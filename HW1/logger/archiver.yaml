@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: custom-logger-archiver
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: archiver
+            image: busybox
+            command:
+              - /bin/sh
+              - -c
+              - 'tar -czf /tmp/app-logs-$(date +\%Y\%m\%d\%H\%M\%S).tar.gz /app/logs/ && echo "Archive created"'
+            volumeMounts:
+              - name: app-logs
+                mountPath: /app/logs
+          restartPolicy: OnFailure
+          volumes:
+          - name: app-logs
+            hostPath:
+              path: /var/log/custom-logger
+              type: DirectoryOrCreate

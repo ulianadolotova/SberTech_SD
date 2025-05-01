@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-logger-config
+data:
+  config.json: |
+    {
+        "logLevel": "info",
+        "greeting": "Hello from config file!",
+        "port": "8080"
+    }

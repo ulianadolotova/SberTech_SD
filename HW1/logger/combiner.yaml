@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: custom-logger-combiner
+  labels:
+    app: custom-logger-combiner
+spec:
+  selector:
+    matchLabels:
+      app: custom-logger-combiner
+  template:
+    metadata:
+      labels:
+        app: custom-logger-combiner
+    spec:
+      containers:
+      - name: custom-logger-combiner
+        image: busybox
+        command: ["/bin/sh", "-c", "tail -f /app/logs/app.log"]
+        volumeMounts:
+        - name: app-logs
+          mountPath: /app/logs
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: app-logs
+        hostPath:
+          path: /var/log/custom-logger
+          type: DirectoryOrCreate
